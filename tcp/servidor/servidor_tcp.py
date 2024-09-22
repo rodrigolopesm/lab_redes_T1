@@ -1,36 +1,82 @@
 from socket import *
+import threading
 import ast
 
 clientes = {}
 
-def proessa_comando(comando):
-    return "Comando recebido"
+def processa_cliente(client_socket):
+    def broadcast(msg, sender):
+        for client in clientes:
+            if client != sender:
+                client_socket = clientes[client]
+                client_socket.send(msg.encode())
 
-def armazena_cliente(nickname, addr):
-    if nickname not in clientes:
-        clientes[nickname] = addr
-        print(f"Cliente {nickname} armazenado")
+    def armazena_cliente(nickname, socket):
+        if nickname is not None and nickname not in clientes:
+            clientes[nickname] = socket
+            return True
+        return False
 
+    def processa_comando(comando, nickname):
+        if nickname is None:
+            client_socket.send("Para enviar mensagens, você precisa se registrar".encode())
+            return
 
-server_port = 45000
-server_socket = socket(AF_INET, SOCK_STREAM)
-server_socket.bind(('', server_port))
-server_socket.listen(1)
+        if comando.startswith("/reg"):
+            if armazena_cliente(nickname, client_socket) is True:
+                client_socket.send("Você foi registrado com sucesso!".encode())
+                print(f"Cliente {nickname} registrado!")
+            else:
+                client_socket.send("Este nickname já está em uso".encode())
+        elif comando.startswith("/msg") and not "-n" in comando:            
+            msg = comando.split("/msg ")[1]
+            msg = f"{nickname}: {msg}"
 
-print("Server is on 🚀")
+            broadcast(msg, nickname)
+            print(f"Mensagem: \"{msg}\"")
+        elif comando.startswith("/msg") and "-n" in comando:
+            msg = comando.split("/msg -n ")[1]
+            destino = msg.split(" ")[0]
+            msg = f"{nickname}: {msg.split(destino)[1]}"
 
-while True:
-    connection_socket, addr = server_socket.accept()
+            if destino in clientes:
+                print(f"Mensagem para {destino}: \"{msg}\"")
+                clientes[destino].send(msg.encode())
+            else:
+                client_socket.send(f"Cliente {destino} não encontrado".encode())
+        else:
+            client_socket.send("Comando inválido".encode())
 
-    request = connection_socket.recv(1024).decode()
-    request = ast.literal_eval(request)
+    while True:
+        try:
+            request = client_socket.recv(1024).decode()
 
-    nickname = request["nickname"]
-    comando = request["comando"]
+            if not request:
+                break
 
-    armazena_cliente(nickname, addr)
+            request = ast.literal_eval(request)
 
-    resposta = proessa_comando(comando)
+            nickname = request["nickname"]
+            comando = request["comando"]
 
-    connection_socket.send(resposta.encode())
-    connection_socket.close()
+            processa_comando(comando, nickname)
+        except Exception as e:
+            print("[ERRO] Exeção ocorrida")
+            print(e)
+            continue
+
+def inicia_servidor(host="0.0.0.0", port=40000):
+    server = socket(AF_INET, SOCK_STREAM)
+    server.bind((host, port))
+    server.listen()
+
+    print(f"Servidor está ativo 🚀 em {host}:{port}")
+
+    while True:
+        client_socket, addr = server.accept()
+
+        thread = threading.Thread(target=processa_cliente, args=(client_socket,))
+        thread.start()
+
+if __name__ == "__main__":
+    inicia_servidor()

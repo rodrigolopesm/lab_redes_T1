@@ -1,27 +1,53 @@
 from socket import *
-
-server_host = '127.0.0.1'
-server_port = 45000
+import threading
 
 nickname = None
 
-while True:
-    client_socket = socket(AF_INET, SOCK_STREAM)
-    client_socket.connect((server_host, server_port))
+def receive_messages(client_socket):
+    global nickname
 
-    comando = input("Digite um comando: ")
+    while True:
+        try:
+            message = client_socket.recv(1024)
+            if not message:
+                break
 
-    if nickname is None and comando.startswith("/reg"):
-        nickname = comando.split(" ")[1]
+            if message.startswith('Este nickname já está em uso'.encode()):
+                nickname = None
 
-    comando = {
-        "comando": comando,
-        "nickname": nickname
-    }
+            print(message.decode('utf-8'))
+        except Exception as e:
+            print("[ERRO] Conexão perdida.")
+            print(e)
+            break
 
-    client_socket.send(str(comando).encode())
+def inicia_cliente(host="0.0.0.0", port=40000):
+    client = socket(AF_INET, SOCK_STREAM)
+    client.connect((host, port))
+    
+    receive_thread = threading.Thread(target=receive_messages, args=(client,))
+    receive_thread.start()
 
-    resposta = client_socket.recv(1024).decode()
-    print(f"Resposta do servidor: {resposta}")
 
-    client_socket.close()
+    print("Você está conectado ao servidor. Digite /reg <nickname> para se registrar\n")
+    print("Para enviar mensagens, digite /msg <mensagem> ou /msg -n <destino> <mensagem>")
+    
+    while True:
+        comando = input("")
+
+        if comando.startswith("/reg"):
+            global nickname
+            if nickname is not None:
+                print("Você já está registrado")
+                continue
+            nickname = comando.split(" ")[1]
+
+        comando = {
+            "comando": comando,
+            "nickname": nickname
+        }
+
+        client.send(str(comando).encode())
+
+if __name__ == "__main__":
+    inicia_cliente()
