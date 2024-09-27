@@ -4,6 +4,7 @@ import ast
 
 clientes = {}
 
+
 def processa_cliente(client_socket):
     def broadcast(msg, sender):
         for client in clientes:
@@ -19,7 +20,8 @@ def processa_cliente(client_socket):
 
     def processa_comando(comando, nickname):
         if nickname is None:
-            client_socket.send("Para enviar mensagens, você precisa se registrar".encode())
+            client_socket.send(
+                "Para enviar mensagens, você precisa se registrar".encode())
             return
 
         if comando.startswith("/reg"):
@@ -28,7 +30,7 @@ def processa_cliente(client_socket):
                 print(f"Cliente {nickname} registrado!")
             else:
                 client_socket.send("Este nickname já está em uso".encode())
-        elif comando.startswith("/msg") and not "-n" in comando:            
+        elif comando.startswith("/msg") and not "-n" in comando:
             msg = comando.split("/msg ")[1]
             msg = f"{nickname}: {msg}"
 
@@ -43,7 +45,8 @@ def processa_cliente(client_socket):
                 print(f"Mensagem para {destino}: \"{msg}\"")
                 clientes[destino].send(msg.encode())
             else:
-                client_socket.send(f"Cliente {destino} não encontrado".encode())
+                client_socket.send(
+                    f"Cliente {destino} não encontrado".encode())
         else:
             client_socket.send("Comando inválido".encode())
 
@@ -65,7 +68,8 @@ def processa_cliente(client_socket):
             print(e)
             continue
 
-def inicia_servidor(host="0.0.0.0", port=40000):
+
+def inicia_servidor(host="localhost", port=40000):
     server = socket(AF_INET, SOCK_STREAM)
     server.bind((host, port))
     server.listen()
@@ -75,8 +79,10 @@ def inicia_servidor(host="0.0.0.0", port=40000):
     while True:
         client_socket, addr = server.accept()
 
-        thread = threading.Thread(target=processa_cliente, args=(client_socket,))
+        thread = threading.Thread(
+            target=processa_cliente, args=(client_socket,))
         thread.start()
+
 
 if __name__ == "__main__":
     inicia_servidor()

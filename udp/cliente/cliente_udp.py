@@ -3,12 +3,13 @@ import threading
 
 nickname = None
 
-def receive_messages(client_socket):
+
+def receive_messages(client_socket, server_address):
     global nickname
 
     while True:
         try:
-            message = client_socket.recv(1024)
+            message, _ = client_socket.recvfrom(1024)
             if not message:
                 break
 
@@ -17,21 +18,18 @@ def receive_messages(client_socket):
 
             print(message.decode('utf-8'))
         except Exception as e:
-            print("[ERRO] Conexão perdida.")
             print(e)
             break
 
-def inicia_cliente(host="localhost", port=40000):
-    client = socket(AF_INET, SOCK_STREAM)
-    client.connect((host, port))
-    
-    receive_thread = threading.Thread(target=receive_messages, args=(client,))
-    receive_thread.start()
 
+def inicia_cliente(host="localhost", port=40000):
+    client = socket(AF_INET, SOCK_DGRAM)
+    server_address = (host, port)
+    startedListener = False
 
     print("Você está conectado ao servidor. Digite /reg <nickname> para se registrar\n")
     print("Para enviar mensagens, digite /msg <mensagem> ou /msg -n <destino> <mensagem>")
-    
+
     while True:
         comando = input("")
 
@@ -42,12 +40,18 @@ def inicia_cliente(host="localhost", port=40000):
                 continue
             nickname = comando.split(" ")[1]
 
-        comando = {
+        comando_data = {
             "comando": comando,
             "nickname": nickname
         }
 
-        client.send(str(comando).encode())
+        client.sendto(str(comando_data).encode(), server_address)
+        if (not startedListener):
+            receive_thread = threading.Thread(
+                target=receive_messages, args=(client, server_address))
+            receive_thread.start()
+            startedListener = True
+
 
 if __name__ == "__main__":
     inicia_cliente()
