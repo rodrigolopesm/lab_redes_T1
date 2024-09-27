@@ -18,13 +18,14 @@ def write_file(filename, data, sender):
 def receive_messages(client_socket):
     global nickname
 
+    # Função que recebe mensagens do servidor
     while True:
         try:
             message = client_socket.recv(1024)
             if not message:
                 break
 
-            if message.startswith('Este nickname já está em uso'.encode()):
+            if message.startswith("Este nickname já está em uso".encode()):
                 nickname = None
 
             elif message.startswith('FILE: '.encode()):
@@ -63,9 +64,11 @@ def send_file(client_socket, comando):
 
 
 def inicia_cliente(host="localhost", port=40000):
-    client = socket(AF_INET, SOCK_STREAM)
+    # Função que inicia o cliente e se conecta ao servidor
+    client = socket(AF_INET, SOCK_STREAM)  # Cria um socket TCP
     client.connect((host, port))
 
+    # Cria uma thread para receber mensagens do servidor
     receive_thread = threading.Thread(target=receive_messages, args=(client,))
     receive_thread.start()
 
@@ -75,24 +78,23 @@ def inicia_cliente(host="localhost", port=40000):
     while True:
         comando = input("")
 
+        # Verifica se o comando é para registrar um nickname
         if comando.startswith("/reg"):
             global nickname
             if nickname is not None:
                 print("Você já está registrado")
                 continue
             nickname = comando.split(" ")[1]
-
         elif comando.startswith("/file"):
             send_file(client, comando)
             continue
 
-        comando = {
-            "comando": comando,
-            "nickname": nickname
-        }
+        # Prepara o comando para envio, incluindo o nickname
+        comando = {"comando": comando, "nickname": nickname}
 
         client.send(str(comando).encode())
 
 
+# Ponto de entrada do script
 if __name__ == "__main__":
-    inicia_cliente()
+    inicia_cliente()  # Inicia a função que conecta o cliente ao servidor
