@@ -84,7 +84,7 @@ def processa_cliente(client_socket):
 
 
 # Função para iniciar o servidor e aceitar conexões dos clientes.
-def inicia_servidor(host="0.0.0.0", port=40000):
+def inicia_servidor(host="localhost", port=40000):
     server = socket(AF_INET, SOCK_STREAM)  # Cria um socket TCP/IP.
     server.bind((host, port))  # Associa o socket a um endereço e porta especificados.
     server.listen()
