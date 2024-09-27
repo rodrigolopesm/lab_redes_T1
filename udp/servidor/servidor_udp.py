@@ -5,7 +5,7 @@ import ast
 clientes = {}
 
 
-def processa_comando(comando, nickname, client_address, server_socket):
+def processa_comando(comando, nickname, client_address, server_socket, request):
     def broadcast(msg, sender_address):
         for client, addr in clientes.items():
             if addr != sender_address:
@@ -47,6 +47,21 @@ def processa_comando(comando, nickname, client_address, server_socket):
         else:
             server_socket.sendto(
                 f"Cliente {destino} não encontrado".encode(), client_address)
+    elif comando.startswith("/file") and "-n" in comando:
+        filename = comando.split(" ")[1]
+        destino = comando.split(" ")[3]
+        data = {
+            "data": request["data"],
+            "from": nickname,
+            "filename": filename
+        }
+        if destino in clientes:
+            print(f"Arquivo \"{filename}\" enviado para {destino}")
+            server_socket.sendto(
+                f"FILE: {str(data)}".encode(), clientes[destino])
+        else:
+            server_socket.sendto(
+                f"Cliente {destino} não encontrado".encode(), client_address)
     else:
         server_socket.sendto("Comando inválido".encode(), client_address)
 
@@ -65,11 +80,11 @@ def inicia_servidor(host="localhost", port=40000):
                 continue
 
             request = ast.literal_eval(request.decode())
-
             nickname = request["nickname"]
             comando = request["comando"]
 
-            processa_comando(comando, nickname, client_address, server_socket)
+            processa_comando(comando, nickname, client_address,
+                             server_socket, request)
         except Exception as e:
             print("[ERRO] Exeção ocorrida")
             print(e)

@@ -18,7 +18,7 @@ def processa_cliente(client_socket):
             return True
         return False
 
-    def processa_comando(comando, nickname):
+    def processa_comando(comando, nickname, request):
         if nickname is None:
             client_socket.send(
                 "Para enviar mensagens, você precisa se registrar".encode())
@@ -47,6 +47,20 @@ def processa_cliente(client_socket):
             else:
                 client_socket.send(
                     f"Cliente {destino} não encontrado".encode())
+        elif comando.startswith("/file") and "-n" in comando:
+            filename = comando.split(" ")[1]
+            destino = comando.split(" ")[3]
+            data = {
+                "data": request["data"],
+                "from": nickname,
+                "filename": filename
+            }
+            if destino in clientes:
+                print(f"Arquivo \"{filename}\" enviado para {destino}")
+                clientes[destino].send(f"FILE: {str(data)}".encode())
+            else:
+                clientes[destino].sendto(
+                    f"Cliente {destino} não encontrado".encode())
         else:
             client_socket.send("Comando inválido".encode())
 
@@ -62,7 +76,7 @@ def processa_cliente(client_socket):
             nickname = request["nickname"]
             comando = request["comando"]
 
-            processa_comando(comando, nickname)
+            processa_comando(comando, nickname, request)
         except Exception as e:
             print("[ERRO] Exeção ocorrida")
             print(e)
