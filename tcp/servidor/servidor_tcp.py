@@ -98,5 +98,5 @@ def inicia_servidor(host="localhost", port=40000):
         thread.start()
 
 
-if __name__ == "_main_":
+if __name__ == "__main__":
     inicia_servidor()
