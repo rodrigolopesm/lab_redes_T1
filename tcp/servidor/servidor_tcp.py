@@ -59,8 +59,8 @@ def processa_cliente(client_socket):
                 client_socket.send(
                     f"Cliente {destino} não encontrado".encode())
         elif comando.startswith("/file") and "-n" in comando:
-            filename = comando.split(" ")[1]
-            destino = comando.split(" ")[3]
+            destino = comando.split(" ")[2]
+            filename = comando.split(" ")[3]
             data = {
                 "data": request["data"],
                 "from": nickname,
@@ -92,7 +92,7 @@ def processa_cliente(client_socket):
 
             processa_comando(comando, nickname, request)
         except Exception as e:
-            print("[ERRO] Exeção ocorrida")
+            print("[ERRO] Exceção ocorrida")
             print(e)
             continue
 

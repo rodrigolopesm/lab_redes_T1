@@ -31,6 +31,8 @@ def receive_messages(client_socket):
             elif message.startswith('FILE: '.encode()):
                 text_data = message.decode('utf-8').split("FILE: ")[1]
                 data = ast.literal_eval(text_data)
+                print(
+                    f"Arquivo \"{data['filename']}\" recebido de {data['from']}")
                 write_file(data["filename"], data["data"], data["from"])
                 continue
             print(message.decode('utf-8'))
@@ -74,6 +76,7 @@ def inicia_cliente(host="localhost", port=40000):
 
     print("Você está conectado ao servidor. Digite /reg <nickname> para se registrar\n")
     print("Para enviar mensagens, digite /msg <mensagem> ou /msg -n <destino> <mensagem>")
+    print("Para enviar arquivos, digite /file -n <destino> <nome do arquivo>")
 
     while True:
         comando = input("")

@@ -48,8 +48,8 @@ def processa_comando(comando, nickname, client_address, server_socket, request):
             server_socket.sendto(
                 f"Cliente {destino} não encontrado".encode(), client_address)
     elif comando.startswith("/file") and "-n" in comando:
-        filename = comando.split(" ")[1]
-        destino = comando.split(" ")[3]
+        destino = comando.split(" ")[2]
+        filename = comando.split(" ")[3]
         data = {
             "data": request["data"],
             "from": nickname,
@@ -86,7 +86,7 @@ def inicia_servidor(host="localhost", port=40000):
             processa_comando(comando, nickname, client_address,
                              server_socket, request)
         except Exception as e:
-            print("[ERRO] Exeção ocorrida")
+            print("[ERRO] Exceção ocorrida")
             print(e)
             continue
 
