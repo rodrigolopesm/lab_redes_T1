@@ -2,6 +2,7 @@ import os
 from socket import *
 import threading
 import ast
+import time
 
 nickname = None
 
@@ -32,8 +33,9 @@ def receive_messages(client_socket, server_address):
             elif message.startswith('FILE: '.encode()):
                 text_data = message.decode('utf-8').split("FILE: ")[1]
                 data = ast.literal_eval(text_data)
+                part = data["part"]
                 print(
-                    f"Arquivo \"{data['filename']}\" recebido de {data['from']}")
+                    f"Parte {part} de arquivo \"{data['filename']}\" recebido de {data['from']}")
                 write_file(data["filename"], data["data"], data["from"])
                 continue
 
@@ -51,6 +53,7 @@ def send_file(client_socket, server_address, comando):
         return
 
     with open(filename, 'rb') as f:
+        part = 0
         while True:
             file_data = f.read(512)
             if not file_data:
@@ -60,8 +63,11 @@ def send_file(client_socket, server_address, comando):
                 "comando": comando,
                 "data": file_data,
                 "nickname": nickname,
+                "part": part
             }
+            part += 1
             client_socket.sendto(str(data).encode(), server_address)
+            time.sleep(0.05)
 
     print(f"File {filename} sent successfully.")
 

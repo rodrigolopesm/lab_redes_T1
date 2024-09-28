@@ -51,13 +51,16 @@ def processa_comando(comando, nickname, client_address, server_socket, request):
     elif comando.startswith("/file") and "-n" in comando:
         destino = comando.split(" ")[2]
         filename = comando.split(" ")[3]
+        part = request["part"]
         data = {
             "data": request["data"],
             "from": nickname,
-            "filename": filename
+            "filename": filename,
+            "part": part
         }
         if destino in clientes:
-            print(f"Arquivo \"{filename}\" enviado para {destino}")
+            print(
+                f"Parte {part} de arquivo \"{filename}\" enviado para {destino}")
             server_socket.sendto(
                 f"FILE: {str(data)}".encode(), clientes[destino])
         else:
