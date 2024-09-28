@@ -43,14 +43,16 @@ def processa_cliente(client_socket):
             msg = comando.split("/msg ")[1]
             msg = f"{nickname}: {msg}"
 
-            broadcast(msg, nickname)  # Envia a mensagem para todos os clientes.
+            # Envia a mensagem para todos os clientes.
+            broadcast(msg, nickname)
             print(f'Mensagem: "{msg}"')
 
         # Envio de mensagem privada para um cliente específico. /msg -n <destino> <mensagem>
         elif comando.startswith("/msg") and "-n" in comando:
             msg = comando.split("/msg -n ")[1]
             destino = msg.split(" ")[0]
-            msg = f"{nickname}: {msg.split(destino)[1]}"
+            msg_text = comando.split(f"/msg -n {destino} ")[1]
+            msg = f"{nickname}: {msg_text}"
 
             if destino in clientes:
                 print(f'Mensagem para {destino}: "{msg}"')
@@ -100,7 +102,8 @@ def processa_cliente(client_socket):
 # Função para iniciar o servidor e aceitar conexões dos clientes.
 def inicia_servidor(host="localhost", port=40000):
     server = socket(AF_INET, SOCK_STREAM)  # Cria um socket TCP/IP.
-    server.bind((host, port))  # Associa o socket a um endereço e porta especificados.
+    # Associa o socket a um endereço e porta especificados.
+    server.bind((host, port))
     server.listen()
     print(f"Servidor está ativo 🚀 em {host}:{port}")
 
@@ -108,7 +111,8 @@ def inicia_servidor(host="localhost", port=40000):
         client_socket, addr = server.accept()
 
         # Inicia uma nova thread para lidar com o cliente conectado, sem bloquear o servidor.
-        thread = threading.Thread(target=processa_cliente, args=(client_socket,))
+        thread = threading.Thread(
+            target=processa_cliente, args=(client_socket,))
         thread.start()
 
 

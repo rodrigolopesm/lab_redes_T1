@@ -39,7 +39,8 @@ def processa_comando(comando, nickname, client_address, server_socket, request):
     elif comando.startswith("/msg") and "-n" in comando:
         msg = comando.split("/msg -n ")[1]
         destino = msg.split(" ")[0]
-        msg = f"{nickname}: {msg.split(destino)[1]}"
+        msg_text = comando.split(f"/msg -n {destino} ")[1]
+        msg = f"{nickname}: {msg_text}"
 
         if destino in clientes:
             print(f"Mensagem para {destino}: \"{msg}\"")
