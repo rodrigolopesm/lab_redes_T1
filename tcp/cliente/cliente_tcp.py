@@ -8,11 +8,14 @@ nickname = None
 
 def write_file(filename, data, sender):
     final_filename = f"{sender} - {filename}"
-    if not os.path.exists(final_filename):
-        with open(final_filename, 'w') as f:
-            f.write('')
-    with open(final_filename, 'wb') as f:
-        f.write(data)
+    if isinstance(data, bytes):
+        data = data.decode('utf-8')
+
+    lines = data.splitlines()
+    normalized_data = '\n'.join(lines)
+
+    with open(final_filename, 'a') as f:
+        f.write(normalized_data)
 
 
 def receive_messages(client_socket):
