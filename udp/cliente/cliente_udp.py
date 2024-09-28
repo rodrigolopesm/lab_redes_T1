@@ -41,7 +41,7 @@ def receive_messages(client_socket, server_address):
 
 
 def send_file(client_socket, server_address, comando):
-    filename = comando.split(" ")[1]
+    filename = comando.split(" ")[3]
 
     if not os.path.exists(filename):
         print(f"File {filename} does not exist.")
